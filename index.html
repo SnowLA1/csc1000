@@ -1,0 +1,340 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Rent.ie - Home</title>
+  <link rel="stylesheet" href="style.css"/>
+
+  <!-- Leaflet (no key needed) -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  />
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+  </script>
+
+  <style>
+    /* make sure map fills right panel */
+    #leafletMap { width:100%; height:100%; }
+
+    /* tiny helper overlay */
+    .radius-hint{
+      position:absolute; top:12px; left:12px; z-index:2;
+      background:white; padding:8px 10px; border-radius:10px;
+      box-shadow:0 6px 18px rgba(0,0,0,.12);
+      font-size:12px; color:#111; opacity:.95;
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="index.html">🏠 <span>Rent<span class="dot">.ie</span></span></a>
+    <nav class="nav" data-auth>
+      <a href="listings.html">Listings</a>
+      <a href="login.html">Login</a>
+    </nav>
+  </header>
+
+  <main class="app">
+    <aside class="sidebar">
+      <!-- Search -->
+      <div class="search-row">
+        <input id="searchInput" placeholder="Street, area, keyword..."/>
+        <button id="searchBtn" type="button">Search</button>
+      </div>
+
+      <!-- FILTER SYSTEM -->
+      <div class="filter-block">
+        <div>
+          <label for="areaSelect">AREA IN DUBLIN</label>
+          <select id="areaSelect">
+            <option value="all">Anywhere</option>
+            <option value="Dublin">Dublin (General)</option>
+            <option value="Dublin 1">Dublin 1</option>
+            <option value="Dublin 2">Dublin 2</option>
+            <option value="Dublin 3">Dublin 3</option>
+            <option value="Dublin 4">Dublin 4</option>
+            <option value="Dublin 5">Dublin 5</option>
+            <option value="Dublin 6">Dublin 6</option>
+            <option value="Dublin 6W">Dublin 6W</option>
+            <option value="Dublin 7">Dublin 7</option>
+            <option value="Dublin 8">Dublin 8</option>
+            <option value="Dublin 9">Dublin 9</option>
+            <option value="Dublin 10">Dublin 10</option>
+            <option value="Dublin 11">Dublin 11</option>
+            <option value="Dublin 12">Dublin 12</option>
+            <option value="Dublin 13">Dublin 13</option>
+            <option value="Dublin 14">Dublin 14</option>
+            <option value="Dublin 15">Dublin 15</option>
+            <option value="Dublin 16">Dublin 16</option>
+            <option value="Dublin 17">Dublin 17</option>
+            <option value="Dublin 18">Dublin 18</option>
+            <option value="Dublin 20">Dublin 20</option>
+            <option value="Dublin 22">Dublin 22</option>
+            <option value="Dublin 24">Dublin 24</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="budgetSelect">MAX BUDGET (PER MONTH)</label>
+          <select id="budgetSelect">
+            <option value="any">Any budget</option>
+            <option value="1000">Up to €1,000</option>
+            <option value="1500">Up to €1,500</option>
+            <option value="2000">Up to €2,000</option>
+            <option value="2500">Up to €2,500</option>
+            <option value="3000">Up to €3,000</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- TYPE FILTERS -->
+      <div class="cat-row">
+        <div class="cat active" data-type="all"><span>🏘️</span>All</div>
+        <div class="cat" data-type="room"><span>🛏️</span>Rooms</div>
+        <div class="cat" data-type="studio"><span>📦</span>Studio</div>
+        <div class="cat" data-type="apartment"><span>🏢</span>Apartments</div>
+        <div class="cat" data-type="house"><span>🏠</span>Houses</div>
+      </div>
+
+      <!-- Radius UI -->
+      <div class="filter-block" style="margin-top:6px;">
+        <label>RADIUS SELECTION</label>
+        <div style="font-size:12px;opacity:.9;">
+          Click map to set center, then drag to choose radius.
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <div id="radiusReadout" style="font-weight:800;">No radius set</div>
+          <button id="clearRadiusBtn"
+                  style="margin-left:auto;border:0;border-radius:8px;padding:6px 8px;background:#0b3760;color:#fff;font-size:12px;">
+            Clear
+          </button>
+        </div>
+      </div>
+
+      <div id="results" class="results"></div>
+    </aside>
+
+    <!-- MAP (Leaflet) -->
+    <section class="map-wrap">
+      <div class="radius-hint">Radius tool active</div>
+      <div id="leafletMap"></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    Rent.ie Content Copyright © 2025
+  </footer>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+
+ <script>
+  // ---------------------------
+  // Radius selection + filtering
+  // ---------------------------
+
+  // Haversine distance (km)
+  function haversineKm(a, b){
+    const R = 6371;
+    const dLat = (b.lat-a.lat) * Math.PI/180;
+    const dLng = (b.lng-a.lng) * Math.PI/180;
+    const lat1 = a.lat * Math.PI/180;
+    const lat2 = b.lat * Math.PI/180;
+
+    const x = Math.sin(dLat/2)**2 +
+              Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLng/2)**2;
+    const c = 2*Math.atan2(Math.sqrt(x), Math.sqrt(1-x));
+    return R*c;
+  }
+
+  // Radius state
+  const radiusState = {
+    center: null,   // {lat,lng}
+    km: null        // number
+  };
+
+  let map, centerMarker, radiusCircle, isDragging=false;
+
+  // --- listing markers ---
+// --- listing markers as houses ---
+let listingMarkers = []; // keep references so we can update/clear
+
+function clearListingMarkers(){
+  listingMarkers.forEach(m => m.remove());
+  listingMarkers = [];
+}
+
+function houseIcon(){
+  return L.divIcon({
+    className: "house-marker",
+    html: `<div class="house-pin">🏠</div>`,
+    iconSize: [28, 28],
+    iconAnchor: [14, 14], // center
+    popupAnchor: [0, -12]
+  });
+}
+
+function drawListingMarkers(list){
+  clearListingMarkers();
+
+  list.forEach(l => {
+    if(typeof l.lat !== "number" || typeof l.lng !== "number") return;
+
+    const marker = L.marker([l.lat, l.lng], {
+      icon: houseIcon()
+    }).addTo(map);
+
+    marker.bindPopup(`
+      <strong>${l.title}</strong><br/>
+      ${l.area}<br/>
+      <button onclick="location.href='listing.html?id=${l.id}'"
+              style="margin-top:6px;padding:6px 8px;border:0;border-radius:6px;background:#3f7fb7;color:#fff;font-size:12px;cursor:pointer;">
+        Preview
+      </button>
+    `);
+
+    listingMarkers.push(marker);
+  });
+}
+
+
+  function initLeaflet(){
+    map = L.map("leafletMap", {
+      zoomControl: true,
+      doubleClickZoom: false // IMPORTANT: we use double click for radius
+    }).setView([53.3498, -6.2603], 11); // Dublin view
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: "&copy; OpenStreetMap"
+    }).addTo(map);
+
+    // Double-click sets center and begins drag mode
+    map.on("dblclick", (e) => {
+      isDragging = true;
+
+      radiusState.center = { lat: e.latlng.lat, lng: e.latlng.lng };
+      radiusState.km = 0;
+
+      if(centerMarker) centerMarker.remove();
+      centerMarker = L.marker(e.latlng).addTo(map);
+
+      if(radiusCircle) radiusCircle.remove();
+      radiusCircle = L.circle(e.latlng, { radius: 0 }).addTo(map);
+
+      updateRadiusReadout();
+      applyFiltersHome();
+    });
+
+    // Drag updates radius while mouse is held
+    map.on("mousemove", (e) => {
+      if(!isDragging || !radiusState.center) return;
+
+      const km = haversineKm(
+        radiusState.center,
+        { lat: e.latlng.lat, lng: e.latlng.lng }
+      );
+
+      radiusState.km = km;
+
+      if(radiusCircle){
+        radiusCircle.setRadius(km * 1000); // meters
+      }
+
+      updateRadiusReadout();
+      applyFiltersHome();
+    });
+
+    map.on("mouseup", () => { isDragging = false; });
+    map.on("mouseleave", () => { isDragging = false; });
+
+    // initial markers
+    drawListingMarkers(window.LISTINGS);
+  }
+
+  function updateRadiusReadout(){
+    const r = document.getElementById("radiusReadout");
+    if(!radiusState.center || !radiusState.km || radiusState.km < 0.05){
+      r.textContent = "No radius set";
+    } else {
+      r.textContent = radiusState.km.toFixed(2) + " km";
+    }
+  }
+
+  function clearRadius(){
+    radiusState.center = null;
+    radiusState.km = null;
+    if(centerMarker) centerMarker.remove(), centerMarker=null;
+    if(radiusCircle) radiusCircle.remove(), radiusCircle=null;
+    updateRadiusReadout();
+    applyFiltersHome();
+  }
+
+  // Home-specific filter + radius
+  function applyFiltersHome(){
+    const q = (document.getElementById("searchInput")?.value || "").toLowerCase();
+    const area = document.getElementById("areaSelect")?.value || "all";
+    const maxBudgetVal = document.getElementById("budgetSelect")?.value || "any";
+    const maxBudget = maxBudgetVal === "any" ? Infinity : Number(maxBudgetVal);
+    const type = document.querySelector(".cat.active")?.dataset.type || "all";
+
+    let filtered = window.LISTINGS.filter(l=>{
+      const matchesQ = (l.title + " " + l.area).toLowerCase().includes(q);
+      const matchesArea = area === "all" || l.area === area;
+      const price = l.priceMonthly ?? (l.priceWeekly ? l.priceWeekly * 4.33 : Infinity);
+      const matchesBudget = price <= maxBudget;
+      const matchesType = type==="all" || l.type===type;
+
+      // radius match
+      let matchesRadius = true;
+      if(radiusState.center && radiusState.km && radiusState.km >= 0.05){
+        matchesRadius = haversineKm(
+          radiusState.center,
+          { lat: l.lat, lng: l.lng }
+        ) <= radiusState.km;
+      }
+
+      return matchesQ && matchesArea && matchesBudget && matchesType && matchesRadius;
+    });
+
+    // Update sidebar
+    if(typeof renderSidebar === "function"){
+      renderSidebar(filtered);
+    }
+
+    // Update dots to show only filtered results
+    drawListingMarkers(filtered);
+  }
+
+  // Bind UI
+  document.addEventListener("DOMContentLoaded", () => {
+    initLeaflet();
+
+    document.getElementById("clearRadiusBtn")?.addEventListener("click", clearRadius);
+
+    const area = document.getElementById("areaSelect");
+    const budget = document.getElementById("budgetSelect");
+    const search = document.getElementById("searchInput");
+    const btn = document.getElementById("searchBtn");
+
+    [area, budget].forEach(el => el && el.addEventListener("change", applyFiltersHome));
+    search && search.addEventListener("input", applyFiltersHome);
+    btn && btn.addEventListener("click", applyFiltersHome);
+
+    document.querySelectorAll(".cat").forEach(c=>{
+      c.onclick=()=>{
+        document.querySelectorAll(".cat").forEach(x=>x.classList.remove("active"));
+        c.classList.add("active");
+        applyFiltersHome();
+      };
+    });
+
+    applyFiltersHome(); // initial render
+  });
+</script>
+
+</body>
+</html>

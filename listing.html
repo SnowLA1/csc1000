@@ -1,0 +1,74 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Rent.ie - Preview</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="index.html">🏠 <span>Rent<span class="dot">.ie</span></span></a>
+    <nav class="nav" data-auth>
+      <a href="index.html">Home</a>
+      <a href="listings.html">Listings</a>
+    </nav>
+  </header>
+
+  <main class="page preview-layout">
+    <div style="height:70vh;border-radius:12px;overflow:hidden;">
+      <iframe
+        id="streetFrame"
+        width="100%" height="100%"
+        style="border:0;"
+        loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade"
+        src="https://www.google.com/maps/embed?pb=!4v1730000000000!6m8!1m7!1sCAoSLEFGMVFpcE9JYlN1aVJkZk1iV3o2QW1hQ2V4NGZZd1d2dW5uSEY0Yzc1!2m2!1d53.3429!2d-6.2585!3f20!4f0!5f0.7820865974627469">
+      </iframe>
+    </div>
+
+    <aside class="preview-side">
+      <div class="preview-title" id="title">Loading...</div>
+      <div class="badge">🛏 <span id="beds">0</span> beds</div>
+      <div class="preview-price" id="price"></div>
+
+      <div class="icon-row">
+        <button title="Like">👍</button>
+        <button title="Share"><a id="lobbyLink" title="Lobby of interested people" style="text-decoration:none;">🔗</a></button>
+        <button title="Message">✉️</button>
+        <button title="Message">hello</button>
+      </div>
+
+      <div style="font-size:14px;color:#333;line-height:1.5;">
+        Bright, well-located rental. Close to transit, cafes, and city centre.
+      </div>
+
+      
+    </aside>
+  </main>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+  <script>
+    // Fill details from query string
+    document.addEventListener("DOMContentLoaded", ()=>{
+      const params = new URLSearchParams(location.search);
+      const id = Number(params.get("id")||1);
+      const listing = window.LISTINGS.find(x=>x.id===id) || window.LISTINGS[0];
+
+      document.getElementById("title").textContent =
+        `${listing.title}, ${listing.area}, Co. Ireland`;
+      document.getElementById("beds").textContent = listing.beds;
+      document.getElementById("price").textContent =
+        listing.priceMonthly ? `${money(listing.priceMonthly)} per month` :
+        listing.priceWeekly ? `${money(listing.priceWeekly)} per week` : "";
+      
+      // If later you store per-listing embed urls:
+      // document.getElementById("streetFrame").src = listing.streetEmbed;
+      const lobbyA = document.getElementById("lobbyLink");
+      if (lobbyA) lobbyA.href = `lobby.html?id=${listing.id}`;
+
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Rent.ie - Login</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="index.html">🏠 <span>Rent<span class="dot">.ie</span></span></a>
+    <nav class="nav" data-auth>
+      <a href="listings.html">Listings</a>
+      <a href="register.html">Register</a>
+    </nav>
+  </header>
+
+  <main class="page">
+    <h1 style="text-align:center;font-size:44px;margin:10px 0 0;">Login</h1>
+
+    <form id="loginForm" class="form">
+      <label>EMAIL</label>
+      <input name="email" type="email" required/>
+
+      <label>PASSWORD</label>
+      <input name="password" type="password" required/>
+
+      <button type="submit">login</button>
+      <div class="hint">No account? <a href="register.html">Register</a></div>
+    </form>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

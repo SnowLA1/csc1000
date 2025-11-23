@@ -1,0 +1,252 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Rent.ie - Lobby</title>
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    .lobby-wrap{
+      display:grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap:14px;
+      min-height:70vh;
+    }
+    .people-grid{
+      display:grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap:12px;
+      align-content:start;
+    }
+    .person-card{
+      background:#fff;
+      border-radius:12px;
+      box-shadow:var(--shadow);
+      padding:10px;
+      display:grid;
+      gap:6px;
+      cursor:pointer;
+      transition:transform .08s ease;
+    }
+    .person-card:hover{transform:translateY(-2px);}
+    .avatar{
+      width:100%;
+      aspect-ratio:1/1;
+      border-radius:10px;
+      object-fit:cover;
+      background:#eee;
+    }
+    .person-name{font-weight:800;font-size:14px;}
+    .person-mini{font-size:12px;color:var(--muted);line-height:1.3;}
+    .tagrow{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px;}
+    .tag{
+      font-size:11px;background:#f3f6fb;border-radius:999px;padding:4px 7px;
+    }
+
+    .profile-panel{
+      background:#fff;border-radius:12px;box-shadow:var(--shadow);padding:14px;
+      display:grid;gap:10px;align-content:start;
+    }
+    .profile-head{
+      display:flex;gap:10px;align-items:center;
+    }
+    .profile-avatar{
+      width:84px;height:84px;border-radius:10px;object-fit:cover;background:#eee;
+    }
+    .profile-name{font-size:20px;font-weight:800;}
+    .profile-bio{font-size:14px;color:#222;line-height:1.5;}
+    .contact-box{
+      display:grid;gap:8px;margin-top:6px;
+    }
+    .contact-btn{
+      display:flex;align-items:center;justify-content:center;gap:8px;
+      padding:10px;border-radius:10px;border:0;background:var(--blue-dark);color:#fff;font-weight:700;
+    }
+    .ghost-btn{
+      background:#0f4f86;
+    }
+
+    .lobby-top{
+      display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;
+    }
+    .lobby-sub{color:var(--muted);font-size:14px;}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="index.html">🏠 <span>Rent<span class="dot">.ie</span></span></a>
+    <nav class="nav" data-auth>
+      <a href="listings.html">Listings</a>
+      <a href="index.html">Home</a>
+    </nav>
+  </header>
+
+  <main class="page">
+    <div class="lobby-top">
+      <div>
+        <h2 style="margin:0;">Lobby of Interested People</h2>
+        <div id="listingTitle" class="lobby-sub">Loading listing…</div>
+      </div>
+      <a href="index.html" style="font-size:14px;color:#111;text-decoration:underline;">← Back to listings</a>
+    </div>
+
+    <div class="lobby-wrap">
+      <!-- LEFT: Visual lobby -->
+      <section>
+        <div style="font-weight:800;margin-bottom:8px;">People interested in this place</div>
+        <div id="peopleGrid" class="people-grid"></div>
+      </section>
+
+      <!-- RIGHT: Clickable profile + bio + contact -->
+      <aside class="profile-panel">
+        <div style="font-weight:800;">Profile</div>
+        <div id="profileEmpty" class="lobby-sub">
+          Click someone on the left to view their bio and contact details.
+        </div>
+
+        <div id="profileView" style="display:none;">
+          <div class="profile-head">
+            <img id="pAvatar" class="profile-avatar" alt="">
+            <div>
+              <div id="pName" class="profile-name"></div>
+              <div id="pMini" class="lobby-sub"></div>
+            </div>
+          </div>
+
+          <div id="pBio" class="profile-bio"></div>
+
+          <div id="pTags" class="tagrow"></div>
+
+          <div class="contact-box">
+            <a id="pEmail" class="contact-btn" href="#" target="_blank">📧 Email</a>
+            <a id="pWhatsApp" class="contact-btn ghost-btn" href="#" target="_blank">💬 WhatsApp</a>
+            <a id="pPhone" class="contact-btn ghost-btn" href="#" target="_blank">📞 Phone</a>
+          </div>
+
+          <div class="lobby-sub" style="margin-top:6px;">
+            Contact happens outside the website, for privacy + safety.
+          </div>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+  <script>
+    // --- mock interested people (replace with backend later) ---
+    const PEOPLE = [
+      {
+        id: "u1",
+        name: "Aoife Byrne",
+        mini: "Software engineer · 27",
+        bio: "Looking for a quiet, well-connected place near the city. Non-smoker, tidy, work hybrid.",
+        tags: ["Move-in: Jan", "Budget: €2k", "No pets"],
+        avatar: "https://images.unsplash.com/photo-1544723795-3fb6469f5b39?q=80&w=800&auto=format&fit=crop",
+        email: "aoife@example.com",
+        whatsapp: "+353861112223",
+        phone: "+353861112223"
+      },
+      {
+        id: "u2",
+        name: "Daniel O'Connor",
+        mini: "Teacher · 31",
+        bio: "Interested in long-term lets. I’m usually out early, home evenings. Happy to share with 1–2 others.",
+        tags: ["Move-in: ASAP", "Budget: €1.8k", "Likes cycling"],
+        avatar: "https://images.unsplash.com/photo-1547425260-76bcadfb4f2c?q=80&w=800&auto=format&fit=crop",
+        email: "daniel@example.com",
+        whatsapp: "+353871234567",
+        phone: "+353871234567"
+      },
+      {
+        id: "u3",
+        name: "Niamh Keane",
+        mini: "Master’s student · 24",
+        bio: "Looking for somewhere close to a bus line. Quiet during weekdays, social on weekends.",
+        tags: ["Move-in: Feb", "Budget: €1.5k", "Student"],
+        avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=800&auto=format&fit=crop",
+        email: "niamh@example.com",
+        whatsapp: "+353851010101",
+        phone: "+353851010101"
+      },
+      {
+        id: "u4",
+        name: "Khalid Hassan",
+        mini: "UX designer · 29",
+        bio: "Moving to Dublin for work. Prefer modern apartments and easy commute. Friendly and easy-going.",
+        tags: ["Move-in: Dec", "Budget: €2.4k", "Remote-friendly"],
+        avatar: "https://images.unsplash.com/photo-1544725176-7c40e5a71c5e?q=80&w=800&auto=format&fit=crop",
+        email: "khalid@example.com",
+        whatsapp: "+353899998888",
+        phone: "+353899998888"
+      },
+      {
+        id: "u5",
+        name: "Sarah Murphy",
+        mini: "Nurse · 33",
+        bio: "Night shifts sometimes, so I prioritize a calm house. I’m respectful and keep shared spaces clean.",
+        tags: ["Move-in: Jan", "Budget: €2.2k", "Shift worker"],
+        avatar: "https://images.unsplash.com/photo-1544725121-9dba5f5c6f2b?q=80&w=800&auto=format&fit=crop",
+        email: "sarah@example.com",
+        whatsapp: "+353861234111",
+        phone: "+353861234111"
+      },
+      {
+        id: "u6",
+        name: "Tomás Ryan",
+        mini: "Accountant · 28",
+        bio: "Looking for a 1–2 bed in south Dublin. No pets, non-smoker, stable income.",
+        tags: ["Move-in: Feb", "Budget: €2.1k", "Southside"],
+        avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=800&auto=format&fit=crop",
+        email: "tomas@example.com",
+        whatsapp: "+353871110000",
+        phone: "+353871110000"
+      }
+    ];
+
+    function qs(k){ return new URLSearchParams(location.search).get(k); }
+
+    function renderPeople(){
+      const grid = document.getElementById("peopleGrid");
+      grid.innerHTML = PEOPLE.map(p => `
+        <div class="person-card" onclick="selectPerson('${p.id}')">
+          <img class="avatar" src="${p.avatar}" alt="">
+          <div class="person-name">${p.name}</div>
+          <div class="person-mini">${p.mini}</div>
+        </div>
+      `).join("");
+    }
+
+    window.selectPerson = function(id){
+      const p = PEOPLE.find(x => x.id === id);
+      if(!p) return;
+
+      document.getElementById("profileEmpty").style.display = "none";
+      document.getElementById("profileView").style.display = "block";
+
+      document.getElementById("pAvatar").src = p.avatar;
+      document.getElementById("pName").textContent = p.name;
+      document.getElementById("pMini").textContent = p.mini;
+      document.getElementById("pBio").textContent = p.bio;
+
+      document.getElementById("pTags").innerHTML =
+        p.tags.map(t => `<div class="tag">${t}</div>`).join("");
+
+      // outside-site contact
+      document.getElementById("pEmail").href = `mailto:${p.email}?subject=About%20the%20listing%20on%20Rent.ie`;
+      document.getElementById("pWhatsApp").href = `https://wa.me/${p.whatsapp.replace(/[^0-9]/g,'')}`;
+      document.getElementById("pPhone").href = `tel:${p.phone}`;
+    };
+
+    document.addEventListener("DOMContentLoaded", () => {
+      // show listing title based on id
+      const id = Number(qs("id") || 1);
+      const listing = window.LISTINGS?.find(l => l.id === id) || window.LISTINGS?.[0];
+      document.getElementById("listingTitle").textContent =
+        listing ? `${listing.title} · ${listing.area}` : "";
+
+      renderPeople();
+    });
+  </script>
+</body>
+</html>
