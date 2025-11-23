@@ -18,6 +18,13 @@ function navGuard(){
 
 function money(n){ return "€" + n.toLocaleString("en-IE"); }
 
+const LISTING_TYPE_ICONS = {
+    "room": "🛏️",
+    "studio": "📦",
+    "apartment": "🏢",
+    "house": "🏠"
+};
+
 function listingCardHTML(l){
   const price = l.priceMonthly ? `${money(l.priceMonthly)} / month` :
                 l.priceWeekly ? `${money(l.priceWeekly)} / week` : "";
@@ -26,8 +33,8 @@ function listingCardHTML(l){
       <strong>${l.title}</strong>
       <small>${l.area}</small>
       <div class="meta">
-        <span>🛏 ${l.beds}</span>
-        <span>🏷 ${l.type}</span>
+        <span>🛏️ ${l.beds}</span>
+        <span>| ${LISTING_TYPE_ICONS[l.type]} ${l.type}</span>
       </div>
       <div class="price">${price}</div>
       <div style="display:flex;gap:6px;">
