@@ -1,4 +1,4 @@
-// Simple mock data. Replace with your DB/API later.
+// this is testing data to appear on the mock UI that helps to showcase the listings on the homepage and listing page
 window.LISTINGS = [
   {
     id: 1,
@@ -165,8 +165,6 @@ window.LISTINGS = [
     lng: -6.0653,
     img: "https://images.unsplash.com/photo-1484154218962-a197022b5858?q=80&w=1200&auto=format&fit=crop"
   },
-
-  // --- 10 NEW REALISTIC LISTINGS BELOW ---
   {
     id: 16,
     title: "Modern 1 Bed in Stoneybatter",
@@ -278,3 +276,4 @@ window.LISTINGS = [
     img: "https://images.unsplash.com/photo-1598928506311-c55dedbf7885?q=80&w=1200&auto=format&fit=crop"
   }
 ];
+
