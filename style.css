@@ -132,7 +132,13 @@ button{cursor:pointer;}
 }
 .preview-title{font-size:28px;font-weight:800;}
 .preview-price{font-size:20px;font-weight:800;}
-.icon-row{display:flex;gap:18px;font-size:30px;opacity:.85;}
+.icon-row{display:flex;gap:18px;font-size:100px;opacity:.85;}
+.icon-row button{
+  border:0;background:none;padding:0;color:inherit;
+  display:flex;align-items:center;justify-content:center;
+  font-size:60px; height: 100px;
+  flex:1;background:var(--blue);border-radius:10px;padding:10px;
+}
 .badge{
   display:inline-flex;align-items:center;gap:6px;background:#f3f6fb;padding:6px 10px;border-radius:999px;font-size:12px;
 }
