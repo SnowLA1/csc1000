@@ -1,10 +1,11 @@
-// --- Simple "auth" mock using localStorage ---
+// To avoid using an sql data base for this mock UI, using localStorage to store the user's login/registery data - strapi.io/blog/how-to-use-localstorage-in-javascript#:~:text=The%20localStorage%20property%20provides%20persistent,data%20types%20require%20JSON%20serialization.
 function getUsers(){ return JSON.parse(localStorage.getItem("users")||"[]");}
 function saveUsers(u){ localStorage.setItem("users", JSON.stringify(u));}
 function setSession(user){ localStorage.setItem("session", JSON.stringify(user));}
 function getSession(){ return JSON.parse(localStorage.getItem("session")||"null");}
 function clearSession(){ localStorage.removeItem("session");}
 
+// Display for the Navigation bar for when the user is logged in or not
 function navGuard(){
   const s = getSession();
   const el = document.querySelector("[data-auth]");
@@ -27,7 +28,7 @@ function listingCardHTML(l){
       <small>${l.area}</small>
       <div class="meta">
         <span>🛏 ${l.beds}</span>
-        <span>🏷 ${l.type}</span>
+        <span> ${l.type}</span>
       </div>
       <div class="price">${price}</div>
       <div style="display:flex;gap:6px;">
@@ -49,7 +50,7 @@ function renderSidebar(list){
   `;
 }
 
-// --- FILTERS ---
+// Setting up the filters for A) setting the locations in dublin that the types of housing are at and B) the budget that the student has available for them
 function applyFilters(){
   const q = (document.getElementById("searchInput")?.value || "").toLowerCase();
   const area = document.getElementById("areaSelect")?.value || "all";
@@ -70,6 +71,7 @@ function applyFilters(){
   renderListingsPage(filtered);
 }
 
+
 function bindHomeUI(){
   const si = document.getElementById("searchInput");
   const ab = document.getElementById("areaSelect");
@@ -89,36 +91,11 @@ function bindHomeUI(){
     };
   });
 
-  // initial
+  // When the webpage is just opened
   renderSidebar(window.LISTINGS);
 }
 
-// --- Listings Page render ---
-function renderListingsPage(list){
-  const wrap = document.getElementById("listingsList");
-  if(!wrap) return;
-  wrap.innerHTML = list.map(l=>`
-    <div class="card" style="display:grid;grid-template-columns:120px 1fr;gap:10px;align-items:center;">
-      <img src="${l.img}" alt="" style="width:120px;height:80px;object-fit:cover;border-radius:8px;">
-      <div>
-        <strong>${l.title}</strong><br>
-        <small>${l.area}</small>
-        <div class="meta" style="margin-top:6px;">
-          <span>🛏 ${l.beds}</span>
-          <span>🏷 ${l.type}</span>
-          <span class="price" style="margin-left:auto;">
-            ${l.priceMonthly?`${money(l.priceMonthly)}/mo`:l.priceWeekly?`${money(l.priceWeekly)}/wk`:""}
-          </span>
-        </div>
-        <div style="margin-top:8px;display:flex;gap:6px;">
-          <button onclick="openListing(${l.id})">Preview</button>
-        </div>
-      </div>
-    </div>
-  `).join("") || `<div class="card"><strong>No results</strong></div>`;
-}
-
-// --- Form handlers ---
+// Functions to handle the login/register forms and validating them
 function bindLogin(){
   const f=document.getElementById("loginForm");
   if(!f) return;
@@ -155,3 +132,4 @@ document.addEventListener("DOMContentLoaded", ()=>{
   bindLogin();
   bindRegister();
 });
+
