@@ -39,7 +39,7 @@ button{cursor:pointer;}
 /* main layout */
 .app{
   display:grid;
-  grid-template-columns:320px 1fr;
+  grid-template-columns:400px 1fr;
   height:calc(100vh - 64px);
 }
 
@@ -99,7 +99,7 @@ button{cursor:pointer;}
 
 /* map area */
 .map-wrap{position:relative;height:100%;}
-#map, #miniMap, #streetMap{height:100%;width:100%;}
+#map, #miniMap, #streetMap{height:100%;width:100%;z-index: -10;}
 
 /* page containers */
 .page{
